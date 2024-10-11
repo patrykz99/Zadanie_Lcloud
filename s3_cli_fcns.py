@@ -1,5 +1,6 @@
 import boto3
 import os
+import re
 from config import Config
 
 config_class = Config()
@@ -16,17 +17,18 @@ def list_files_s3():
     ''' Fcn to list all files S3 Bucket prefix y-wing/'''
     try:
         response = s3_b.list_objects_v2(Bucket=bucket, Prefix=prefix)
-        print(response)
+        # print(response)
+        print(response.items())
         if 'Contents' in response:
             print(f'Files in bucket {bucket} (prefix: {prefix}): ')
             for obj in response['Contents']:
                 print(obj['Key'])
         else:
-            print(f'No files in bucket {bucket} (prefix: {prefix}).')
+            print(f'No files found in {bucket} {prefix}')
     except Exception as e:
         print(f"Error in listing files: {e}")
 
-def upload_local_file(local_file_path, key_file_name):
+def upload_local_file(local_file_path:str, key_file_name:str):
     '''Upload local file to S3 Bucket with prefix y-wing/'''
     try:
         key_file_name = f"{prefix}{key_file_name}" #Added prefix before to mark the proper location
@@ -34,3 +36,26 @@ def upload_local_file(local_file_path, key_file_name):
         print(f"Local file ('{local_file_path}') uploaded as '{key_file_name}'.")
     except Exception as e:
         print(f"Error in uploading file: {e}")
+
+def list_files_with_regex(pattern:str):
+    ''' fcn to list files with proper regex pattern'''
+    list_matched_files = []
+    try:
+        response = s3_b.list_objects_v2(Bucket=bucket, Prefix=prefix)
+        if 'Contents' in response:
+            regex = re.compile(pattern)
+            for obj in response['Contents']:
+                if regex.search(obj['Key']):
+                    list_matched_files.append(obj['Key'])
+                    
+            if list_matched_files == True:
+                print('Files: ')
+                for file in list_matched_files:
+                    print(file)
+            else:
+                print(f'No files with matching pattern')
+        else:
+            print(f'No files found in {bucket} {prefix}')
+    
+    except Exception as e:
+        print(f"Error in listing files: {e}")
