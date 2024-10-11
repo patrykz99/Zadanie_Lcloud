@@ -26,3 +26,11 @@ def list_files_s3():
     except Exception as e:
         print(f"Error in listing files: {e}")
 
+def upload_local_file(local_file_path, key_file_name):
+    '''Upload local file to S3 Bucket with prefix y-wing/'''
+    try:
+        key_file_name = f"{prefix}{key_file_name}" #Added prefix before to mark the proper location
+        s3_b.upload_file(local_file_path, bucket, key_file_name)
+        print(f"Local file ('{local_file_path}') uploaded as '{key_file_name}'.")
+    except Exception as e:
+        print(f"Error in uploading file: {e}")
