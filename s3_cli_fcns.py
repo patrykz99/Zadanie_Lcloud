@@ -18,7 +18,7 @@ def list_files_s3():
     try:
         response = s3_b.list_objects_v2(Bucket=bucket, Prefix=prefix)
         # print(response)
-        print(response.items())
+        #print(response.items())
         if 'Contents' in response:
             print(f'Files in bucket {bucket} (prefix: {prefix}): ')
             for obj in response['Contents']:
@@ -28,7 +28,7 @@ def list_files_s3():
     except Exception as e:
         print(f"Error in listing files: {e}")
 
-def upload_local_file(local_file_path:str, key_file_name:str):
+def upload_local_file_s3(local_file_path:str, key_file_name:str):
     '''Upload local file to S3 Bucket with prefix y-wing/'''
     try:
         key_file_name = f"{prefix}{key_file_name}" #Added prefix before to mark the proper location
@@ -37,15 +37,15 @@ def upload_local_file(local_file_path:str, key_file_name:str):
     except Exception as e:
         print(f"Error in uploading file: {e}")
 
-def list_files_with_regex(pattern:str):
+def list_files_with_regex_s3(pattern:str):
     ''' fcn to list files with proper regex pattern'''
     list_matched_files = []
     try:
         response = s3_b.list_objects_v2(Bucket=bucket, Prefix=prefix)
         if 'Contents' in response:
-            regex = re.compile(pattern)
+            r_patt = re.compile(pattern)
             for obj in response['Contents']:
-                if regex.search(obj['Key']):
+                if r_patt.search(obj['Key']):
                     list_matched_files.append(obj['Key'])
                     
             if list_matched_files == True:
@@ -59,3 +59,20 @@ def list_files_with_regex(pattern:str):
     
     except Exception as e:
         print(f"Error in listing files: {e}")
+
+def delete_files_with_regex_s3(pattern):
+    ''' fcn to delete proper files with pattern from bucket/prefix'''
+    try:
+        response = s3_b.list_objects_v2(Bucket=bucket, Prefix=prefix)
+        
+        if 'Contents' in response:
+            r_patt = re.compile(pattern)
+            for obj in response['Contents']:
+                if r_patt.search(obj['Key']):
+                    s3_b.delete_object(Bucket=bucket, Key=obj['Key'])
+                    print(f"Deleted file: {obj['Key']}")
+        else:
+            print(f'No files found in {bucket} {prefix}')
+    
+    except Exception as e:
+        print(f"Error in deleting files {e}")
